@@ -81,8 +81,34 @@ void *networkActivity(void *arg) {  // Simulate Network Activity
 	pthread_exit(NULL);
 }
 
+/* Round Robin Scheduling Simulation */
+void roundRobin(){
 
+	int burst[] = {5,8,3};
+	int remaining[] = {5,8,3};
+	int quantum = 2;
+	printf("\n[Round Robin Scheduling]\n");
+	while(1){
+		int done = 1;
+		for(int i = 0; i < 3; i++){
+			if(remaining[i] > 0){
+				done = 0;
+				if(remaining[i] > quantum){
+					printf("Process P%d executes for %d units\n", i + 1, quantum);
+					remaining[i] -= quantum;
+				}else{
+					printf("Process P%d completed.\n", i + 1);
+					remaining[i] = 0;
+				}
+			}
+		}
 
+		if(done)
+			break;
+	}
+}
+
+/* Main Function */
 int main(){
 	/* Process Creation*/
 	processCreation();
@@ -102,6 +128,8 @@ int main(){
 
 	printf("\n[Synchronization]\n");
 	printf("Final Counter Value: %d\n", counter);
+
+	roundRobin();
 
 	printf("\n[Race Condition]\n");
 	printf("Race Condition is prevented using a mutex.\n");
