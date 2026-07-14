@@ -86,6 +86,99 @@ void fifo_simulation(int request[], int totalRequests, int frameCount)
 	}
 }
 
+/* LRU Page Replacement */
+void lru_simulation(int requests[], int totalRequests, int frameCount)
+{
+	int frames[MAX_FRAMES];
+	int recent[MAX_FRAMES];
+	int i;
+	int j;
+	int found;
+	int emptyFrame;
+	int leastRecent;
+
+	/* Makes all frames empty */
+	for(i = 0; i < frameCount; i++)
+	{
+		frames[i] = -1;
+		recent[i] = -1;
+	}
+	printf("\nLRU Simulation\n");
+
+	/* Checks every page request */
+	for(i = 0; i < totalRequests; i++)
+	{
+		found = 0;
+		/* Checks if page is already in memory */
+		for(j = 0; j < frameCount; j++)
+		{
+			if(frames[j] == requests[i])
+			{
+				found = 1;
+				/* Updates last used time */
+				recent[j] = i;
+				break;
+			}
+		}
+		printf("\nRequest %d : Page %d\n", i + 1, requests[i]);
+		if(found == 1)
+		{
+			printf("Result : Page Hit\n");
+		}
+		else
+		{
+			printf("Result : Page Fault\n");
+			emptyFrame = -1;
+
+			/* Checks for empty frame */
+			for(j = 0; j < frameCount; j++)
+			{
+				if(frames[j] == -1)
+				{
+					emptyFrame = j;
+					break;
+				}
+			}
+
+			/* If empty frame exists */
+			if(emptyFrame != -1)
+			{
+				frames[emptyFrame] = requests[i];
+				recent[emptyFrame] = i;
+			}
+			else
+			{
+				/* Finds least recently used page */
+				leastRecent = 0;
+				for(j = 1; j < frameCount; j++)
+				{
+					if(recent[j] < recent[leastRecent])
+					{
+						leastRecent = j;
+					}
+				}
+
+				/* Replaces last recently used page */
+				frames[leastRecent] = requests[i];
+				recent[leastRecent] = i;
+			}
+			/* Displays memory frames */
+			printf("Memory Frames\n");
+			for(j = 0; j < frameCount; j++)
+			{
+				if(frames[j] == -1)
+				{
+ 					printf("[Empty]\n");
+				}
+				else
+				{
+					printf("[Page %d]\n", frames[j]);
+				}
+			}
+		}
+	}
+}
+
 int main()
 {
     	struct Page pages[TOTAL_PAGES] = {
@@ -107,6 +200,7 @@ int main()
     	int totalRequests;
     	int requests[MAX_REQUESTS];
     	int i;
+	int choice;
 
     	printf("C4mpus Student Portal Paging System\n");
 
@@ -154,8 +248,32 @@ int main()
         	scanf("%d", &requests[i]);
     	}
 
-    	/* Start FIFO simulation */
-    	fifo_simulation(requests, totalRequests, frameCount);
+    	/* Choose Algorithm */
+	printf("\n");
+	printf("1. FIFO\n");
+	printf("2. LRU\n");
+	printf("3. Both\n");
+	printf("\nChoose Algorithm : ");
+	scanf("%d", &choice);
 
+	/* Run selected Algorithm */
+	if(choice == 1)
+	{
+    		fifo_simulation(requests, totalRequests, frameCount);
+	}
+	else if(choice == 2)
+	{
+		lru_simulation(requests, totalRequests, frameCount);
+	}
+	else if(choice == 3)
+	{
+		fifo_simulation(requests, totalRequests, frameCount);
+		printf("\n");
+		lru_simulation(requests, totalRequests, frameCount);
+	}
+	else
+	{
+		printf("Invalid Choice\n");
+	}
     	return 0;
 }
