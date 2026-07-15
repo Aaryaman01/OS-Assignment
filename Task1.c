@@ -1,3 +1,7 @@
+
+/* Task1: Process Management and Threading */
+/* Scenario: Online Food Delivery System */
+
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -7,12 +11,14 @@
 
 /* Mutex Synchronization mechanism applied */
 // Shared resource for Synchronization
-int counter = 0;
+int completedTasks = 0;
 pthread_mutex_t lock;
 
-/* Process creation (Parent and Child Process) */
+/* Process creation (Food Delivery System) */
 void processCreation(){
-	printf("\n[Process Creation] fork()\n");
+	printf("\n[Food Delivery System]\n");
+	printf("Creating customer order...\n");
+
 	/* Prevent duplicate output after fork */
 	fflush(stdout);
 
@@ -23,61 +29,77 @@ void processCreation(){
 		_exit(1);
 	/* Child Process Creation */
 	}else if(pid == 0) {
-		printf("Child process created.\n");
-		printf("Child PID: %d\n",getpid());
-		printf("Parent PID: %d\n",getppid());
+		printf("Child process (Customer Order) created.\n");
+		printf("Order Process PID: %d\n",getpid());
+		printf("Food Delivery System PID: %d\n",getppid());
 		_exit(0);
 	/* Parent Process Creation */
 	}else{
-		printf("Parent process created.\n");
-       		printf("Parent PID : %d\n", getpid());
-		printf("Child PID  : %d\n", pid);
+		printf("Parent process (Food Delivery System) started.\n");
+       		printf("System PID : %d\n", getpid());
+		printf("Order Process PID  : %d\n", pid);
 
 		/* Parent waits for child demonstration */
 		wait(NULL);
-		printf("Parent waited for child process.\n");
+		printf("Parent process waited for the customer order process to finish.\n");
 	}
 }
+
 /* Multiple Thread Creation */
-void *systemInfo(void *arg){  // Display System Information
-	struct utsname sysInfo;
-	uname(&sysInfo);
+void *restaurant(void *arg){
 
 	/* Synchronization using Mutex */
 	pthread_mutex_lock(&lock);
-	counter++;
 
-	printf("[System Info Thread] OS: %s, Version: %s\n", sysInfo.sysname, sysInfo.version);
+	printf("\n[Restaurant Thread]\n");
+	printf("Preparing customer order...\n");
 
-	pthread_mutex_unlock(&lock);
-
-	pthread_exit(NULL);
-}
-
-void *diskIO(void *arg) {  // Simulate Disk I/O
-
-	/* Lock shared resource */
-	pthread_mutex_lock(&lock);
-	printf("[Disk I/O Thread] Starting disk read operation...\n");
 	sleep(2);
-	counter++;
-	printf("[Disk I/O Thread] Disk read completed!\n");
-	printf("Counter : %d\n", counter);
+	completedTasks++;
+
+	printf("Order prepared successfully.\n");
+    	printf("Completed Tasks : %d\n", completedTasks);
 
 	pthread_mutex_unlock(&lock);
 
 	pthread_exit(NULL);
 }
 
-void *networkActivity(void *arg) {  // Simulate Network Activity
+void *delivery(void *arg) {
 
 	/* Lock shared resource */
 	pthread_mutex_lock(&lock);
 
-	printf("[Network Thread] Sending data over the network...\n");
+	printf("\n[Delivery Thread]\n");
+	printf("Delivering customer order...\n");
+
+	sleep(2);
+	completedTasks++;
+	printf("Order delivered successfully.\n");
+	printf("Completed Tasks : %d\n", completedTasks);
+
+	/* Unlock shared resource */
+	pthread_mutex_unlock(&lock);
+
+	pthread_exit(NULL);
+}
+
+void *payment(void *arg) {
+
+	/* Lock shared resource */
+	pthread_mutex_lock(&lock);
+
+	printf("\n[Payment Thread]\n");
+	printf("Processing customer payment...\n");
+
 	sleep(1);
-	counter++;
-	printf("[Network Thread] Data sent successfully!\n");
+	completedTasks++;
+
+	printf("Payment completed successfully.\n");
+	printf("Completed Tasks : %d\n", completedTasks);
+
+	/* Unlock shared resource */
+	pthread_mutex_unlock(&lock);
 	pthread_exit(NULL);
 }
 
@@ -87,17 +109,29 @@ void roundRobin(){
 	int burst[] = {5,8,3};
 	int remaining[] = {5,8,3};
 	int quantum = 2;
+	int i;
+	int done;
+
+	char tasks[3][30]=
+	{
+		"Restaurant",
+        	"Delivery",
+        	"Payment"
+	};
+
+
 	printf("\n[Round Robin Scheduling]\n");
+
 	while(1){
-		int done = 1;
-		for(int i = 0; i < 3; i++){
+		done = 1;
+		for(i = 0; i < 3; i++){
 			if(remaining[i] > 0){
 				done = 0;
 				if(remaining[i] > quantum){
-					printf("Process P%d executes for %d units\n", i + 1, quantum);
+					printf("%s executes for %d units\n", tasks[i], quantum);
 					remaining[i] -= quantum;
 				}else{
-					printf("Process P%d completed.\n", i + 1);
+					printf("%s completed.\n", tasks[i]);
 					remaining[i] = 0;
 				}
 			}
@@ -118,30 +152,41 @@ int main(){
 	/* Initialize Mutex */
 	pthread_mutex_init(&lock, NULL);
 
-	printf("Main Process ID: %d\n", getpid());
-	pthread_create(&thread1, NULL, systemInfo, NULL);
-	pthread_create(&thread2, NULL, diskIO, NULL);
-	pthread_create(&thread3, NULL, networkActivity, NULL);
+	printf("\nMain Process ID: %d\n", getpid());
+
+	/* Create Threads */
+	pthread_create(&thread1, NULL, restaurant, NULL);
+	pthread_create(&thread2, NULL, delivery, NULL);
+	pthread_create(&thread3, NULL, payment, NULL);
+
+	/* Wait for Threads */
 	pthread_join(thread1, NULL);
 	pthread_join(thread2, NULL);
 	pthread_join(thread3, NULL);
 
+	/* Synchronization */
 	printf("\n[Synchronization]\n");
-	printf("Final Counter Value: %d\n", counter);
+	printf("All food delivery tasks completed successfully.\n");
+	printf("Final Completed Tasks : %d\n", completedTasks);
 
+	/* Round Robin Scheduling */
 	roundRobin();
 
+	/* Race Condition */
 	printf("\n[Race Condition]\n");
+	printf("Restaurant, Delivery and Payment threads share the same order information.\n");
 	printf("Race Condition is prevented using a mutex.\n");
 
+	/* Deadlock Prevention */
 	printf("\n[Deadlock Prevention]\n");
 	printf("Deadlock is prevented by locking and unlocking the mutex properly.\n");
 
 	/* Destroy Mutex */
 	pthread_mutex_destroy(&lock);
 
-	printf("All OS tasks (threads) completed. Main process exiting.\n");
+	printf("\nAll food delivery operations completed.\n");
+	printf("Food Delivery System closed successfully.\n");
+
 	return 0;
 }
-
 
