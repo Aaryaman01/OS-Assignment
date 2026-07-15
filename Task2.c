@@ -29,6 +29,12 @@ void fifo_simulation(int requests[], int totalRequests, int frameCount)
 	int found;
 	int nextReplace = 0; /* Tells which frame should be replaced next */
 
+	/* Statistics */
+	int hits = 0;
+	int pageFaults = 0;
+	float hitRatio;
+	float missRatio;
+
 	/* Makes all frames empty */
 	for(i = 0; i < frameCount; i++)
 	{
@@ -56,11 +62,13 @@ void fifo_simulation(int requests[], int totalRequests, int frameCount)
         	/* If page is already in memory */
         	if(found == 1)
         	{
+			hits++;  /* Increases hit count */
             		printf("Result : Page Hit\n");
         	}
         	/* If page is not in memory */
         	else
         	{
+			pageFaults++;  /* Increases page fault count */
             		printf("Result : Page Fault\n");
 
             		/* Replaces the oldest page */
@@ -91,6 +99,17 @@ void fifo_simulation(int requests[], int totalRequests, int frameCount)
             		}
 		}
 	}
+	/* Calculates hit and miss ratios */
+	hitRatio = (float)hits / totalRequests;
+	missRatio = (float)pageFaults / totalRequests;
+
+	/* Displays FIFO statistics */
+	printf("\nFIFO Statistics\n");
+	printf("Total Requests : %d\n", totalRequests);
+	printf("Hits : %d\n", hits);
+	printf("Page Faults : %d\n", pageFaults);
+	printf("Hit Ratio : %.2f\n", hitRatio);
+	printf("Miss Ratio : %.2f\n", missRatio);
 }
 
 /* LRU Page Replacement */
@@ -103,6 +122,12 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 	int found;
 	int emptyFrame;
 	int leastRecent;
+
+	/* Statistics */
+	int hits = 0;
+	int pageFaults = 0;
+	float hitRatio;
+	float missRatio;
 
 	/* Makes all frames empty */
 	for(i = 0; i < frameCount; i++)
@@ -130,10 +155,12 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 		printf("\nRequest %d : %s\n", i + 1, pages[requests[i]]);
 		if(found == 1)
 		{
+			hits++; /* Increases hit count */
 			printf("Result : Page Hit\n");
 		}
 		else
 		{
+			pageFaults++; /* Increase page fault count */
 			printf("Result : Page Fault\n");
 			emptyFrame = -1;
 
@@ -169,21 +196,32 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 				frames[leastRecent] = requests[i];
 				recent[leastRecent] = i;
 			}
-			/* Displays memory frames */
-			printf("Memory Frames\n");
-			for(j = 0; j < frameCount; j++)
+		}
+		/* Displays memory frames */
+		printf("Memory Frames\n");
+		for(j = 0; j < frameCount; j++)
+		{
+			if(frames[j] == -1)
 			{
-				if(frames[j] == -1)
-				{
- 					printf("[Empty]\n");
-				}
-				else
-				{
-					printf("[%s]\n", pages[frames[j]]);
-				}
+ 				printf("[Empty]\n");
+			}
+			else
+			{
+				printf("[%s]\n", pages[frames[j]]);
 			}
 		}
 	}
+	/* Calculates hit and miss ratios */
+	hitRatio = (float)hits / totalRequests;
+	missRatio = (float)pageFaults / totalRequests;
+
+	/* Displays LRU statistics */
+	printf("\nLRU Statistics\n");
+	printf("Total Requests : %d\n", totalRequests);
+	printf("Hits : %d\n", hits);
+	printf("Page Faults : %d\n", pageFaults);
+	printf("Hit Ratio : %.2f\n", hitRatio);
+	printf("Miss Ratio : %.2f\n", missRatio);
 }
 
 int main()
@@ -242,6 +280,13 @@ int main()
     	/* Displays Total page requests */
     	printf("Enter total page requests: ");
     	scanf("%d", &totalRequests);
+
+	/* Checks if total requests are valid */
+	if(totalRequests <= 0 || totalRequests > MAX_REQUESTS)
+	{
+    		printf("Invalid number of requests.\n");
+    		return 0;
+	}
 
     	/* Displays page request sequence */
     	printf("\nEnter page request sequence\n");
