@@ -232,6 +232,13 @@ int main()
     	printf("\nEnter number of frames: ");
     	scanf("%d", &frameCount);
 
+	/* Checks if frame count is valid */
+	if(frameCount <= 0 || frameCount > MAX_FRAMES)
+	{
+		printf("Invalid frame count.\n");
+		return 0;
+	}
+
     	/* Displays Total page requests */
     	printf("Enter total page requests: ");
     	scanf("%d", &totalRequests);
