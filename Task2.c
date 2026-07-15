@@ -7,16 +7,23 @@
 #define MAX_REQUESTS 50
 #define MAX_FRAMES 10
 
-/* Structure to store page information */
-struct Page {
-	int pageNumber;
-	char pageName[30];
+/* Stores all C4mpus portal page */
+char pages[TOTAL_PAGES][30] =
+{
+	"Dashboard",
+        "Routine",
+       	"My Assignments",
+        "Attendance",
+        "Results",
+        "Books",
+        "Profile",
+        "Fees",
 };
 
 /* FIFO Page Replacement */
-void fifo_simulation(int request[], int totalRequests, int frameCount)
+void fifo_simulation(int requests[], int totalRequests, int frameCount)
 {
-	int frames[MAX_FRAMES]; /* Stores current page in physical memory */
+	int frames[MAX_FRAMES]; /* Physical memory frames */
 	int i;
 	int j;
 	int found;
@@ -37,14 +44,14 @@ void fifo_simulation(int request[], int totalRequests, int frameCount)
         	/* Checks if page is already in memory */
         	for(j = 0; j < frameCount; j++)
         	{
-            		if(frames[j] == request[i])
+            		if(frames[j] == requests[i])
             		{
                 		found = 1;
                 		break;
             		}
        		}
 
-        	printf("\nRequest %d : Page %d\n", i + 1, request[i]);
+        	printf("\nRequest %d : %s\n", i + 1, pages[requests[i]]);
 
         	/* If page is already in memory */
         	if(found == 1)
@@ -57,7 +64,7 @@ void fifo_simulation(int request[], int totalRequests, int frameCount)
             		printf("Result : Page Fault\n");
 
             		/* Replaces the oldest page */
-            		frames[nextReplace] = request[i];
+            		frames[nextReplace] = requests[i];
 
            		 /* Moves to next frame */
             		nextReplace++;
@@ -80,7 +87,7 @@ void fifo_simulation(int request[], int totalRequests, int frameCount)
             		}
             		else
             		{
-                		printf("[Page %d]\n", frames[j]);
+                		printf("[%s]\n",pages[frames[j]]);
             		}
 		}
 	}
@@ -120,7 +127,7 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 				break;
 			}
 		}
-		printf("\nRequest %d : Page %d\n", i + 1, requests[i]);
+		printf("\nRequest %d : %s\n", i + 1, pages[requests[i]]);
 		if(found == 1)
 		{
 			printf("Result : Page Hit\n");
@@ -158,7 +165,7 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 					}
 				}
 
-				/* Replaces last recently used page */
+				/* Replaces least recently used page */
 				frames[leastRecent] = requests[i];
 				recent[leastRecent] = i;
 			}
@@ -172,7 +179,7 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 				}
 				else
 				{
-					printf("[Page %d]\n", frames[j]);
+					printf("[%s]\n", pages[frames[j]]);
 				}
 			}
 		}
@@ -181,16 +188,6 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 
 int main()
 {
-    	struct Page pages[TOTAL_PAGES] = {
-        	{0, "Dashboard"},
-        	{1, "Routine"},
-        	{2, "My Assignments"},
-        	{3, "Attendance"},
-        	{4, "Results"},
-        	{5, "Books"},
-        	{6, "Profile"},
-        	{7, "Fees"},
-    	};
 
     	int pageSize;
     	int logicalAddress;
@@ -224,7 +221,7 @@ int main()
     	/* Checks if page exists */
     	if(pageNumber >= 0 && pageNumber < TOTAL_PAGES)
     	{
-        	printf("Requested Page : %s\n", pages[pageNumber].pageName);
+        	printf("Requested Page : %s\n", pages[pageNumber]);
     	}
     	else
     	{
@@ -246,7 +243,14 @@ int main()
     	{
         	printf("Request %d : ", i + 1);
         	scanf("%d", &requests[i]);
-    	}
+
+		/*Checks if page number is valid*/
+		if(requests[i] < 0 || requests[i] >= TOTAL_PAGES)
+		{
+			printf("Invalid page number.\n");
+			return 0;
+		}
+	}
 
     	/* Choose Algorithm */
 	printf("\n");
