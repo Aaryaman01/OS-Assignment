@@ -160,7 +160,7 @@ void lru_simulation(int requests[], int totalRequests, int frameCount)
 		}
 		else
 		{
-			pageFaults++; /* Increase page fault count */
+			pageFaults++; /* Increases page fault count */
 			printf("Result : Page Fault\n");
 			emptyFrame = -1;
 
