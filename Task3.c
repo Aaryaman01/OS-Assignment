@@ -7,12 +7,18 @@
 /* Maximum number of users in the system */
 #define MAX_USERS 3
 
-/* Structure to store login information */
+/* Structure to store user information and permissions */
 struct User
 {
     char username[30];
     char password[30];
     char role[20];
+
+    int canCreate;
+    int canWrite;
+    int canRead;
+    int canDelete;
+    int canEncrypt;
 };
 
 /* Function to verify username and password */
@@ -53,10 +59,17 @@ int login(struct User users[], struct User *currentUser)
 }
 
 /* Function to create a new file */
-void createFile()
+void createFile(struct User currentUser)
 {
     char fileName[50];
     FILE *file;
+
+    /* Check create permission */
+    if(currentUser.canCreate == 0)
+    {
+        printf("Permission Denied.\n");
+        return;
+    }
 
     printf("Enter file name: ");
     scanf("%s", fileName);
@@ -76,12 +89,19 @@ void createFile()
 }
 
 /* Function to write student information into a file */
-void writeFile()
+void writeFile(struct User currentUser)
 {
     char fileName[50];
     char text[300];
 
     FILE *file;
+
+    /* Check write permission */
+    if(currentUser.canWrite == 0)
+    {
+        printf("Permission Denied.\n");
+        return;
+    }
 
     printf("Enter file name: ");
     scanf("%s", fileName);
@@ -109,12 +129,19 @@ void writeFile()
 }
 
 /* Function to display file contents */
-void readFile()
+void readFile(struct User currentUser)
 {
     char fileName[50];
     int ch;
 
     FILE *file;
+
+    /* Check read permission */
+    if(currentUser.canRead == 0)
+    {
+        printf("Permission Denied.\n");
+        return;
+    }
 
     printf("Enter file name: ");
     scanf("%s", fileName);
@@ -142,9 +169,16 @@ void readFile()
 }
 
 /* Function to delete a file */
-void deleteFile()
+void deleteFile(struct User currentUser)
 {
     char fileName[50];
+
+    /* Check delete permission */
+    if(currentUser.canDelete == 0)
+    {
+        printf("Permission Denied.\n");
+        return;
+    }
 
     printf("Enter file name: ");
     scanf("%s", fileName);
@@ -163,12 +197,19 @@ void deleteFile()
 /* Main Function */
 int main()
 {
-    /* Predefined users for authentication */
+    /* Username, Password, Role,
+   Create, Write, Read, Delete, Encrypt */
+
     struct User users[MAX_USERS] =
     {
-        {"admin", "admin123", "Administrator"},
-        {"teacher", "teacher123", "Teacher"},
-        {"student", "student123", "Student"}
+        {"admin", "admin123", "Administrator",
+        1,1,1,1,1},
+
+        {"teacher", "teacher123", "Teacher",
+        1,1,1,0,1},
+
+        {"student", "student123", "Student",
+        0,0,1,0,0}
     };
 
     struct User currentUser;
@@ -200,19 +241,19 @@ int main()
         switch(choice)
         {
             case 1:
-                createFile();
+                createFile(currentUser);
                 break;
 
             case 2:
-                writeFile();
+                writeFile(currentUser);
                 break;
 
             case 3:
-                readFile();
+                readFile(currentUser);
                 break;
 
             case 4:
-                deleteFile();
+                deleteFile(currentUser);
                 break;
 
             case 5:
