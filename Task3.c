@@ -2,7 +2,57 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+/* Maximum number of users in the system */
+#define MAX_USERS 3
+
+/* Structure to store login information */
+struct User
+{
+    char username[30];
+    char password[30];
+    char role[20];
+};
+
+/* Function to verify username and password */
+int login(struct User users[], struct User *currentUser)
+{
+    char username[30];
+    char password[30];
+
+    printf("Login\n");
+
+    /* Get username and password from user */
+    printf("Username: ");
+    scanf("%s", username);
+
+    printf("Password: ");
+    scanf("%s", password);
+
+    /* Check entered credentials against stored users */
+    for(int i = 0; i < MAX_USERS; i++)
+    {
+        if(strcmp(username, users[i].username) == 0 &&
+           strcmp(password, users[i].password) == 0)
+        {
+            /* Store current logged in user */
+            *currentUser = users[i];
+
+            printf("\nLogin Successful!\n");
+            printf("Role: %s\n", currentUser->role);
+
+            return 1;
+        }
+    }
+
+    /* Login failed */
+    printf("\nInvalid Username or Password.\n");
+
+    return 0;
+}
+
+/* Function to create a new file */
 void createFile()
 {
     char fileName[50];
@@ -11,6 +61,7 @@ void createFile()
     printf("Enter file name: ");
     scanf("%s", fileName);
 
+    /* Create file in write mode */
     file = fopen(fileName, "w");
 
     if(file == NULL)
@@ -24,6 +75,7 @@ void createFile()
     fclose(file);
 }
 
+/* Function to write student information into a file */
 void writeFile()
 {
     char fileName[50];
@@ -34,6 +86,7 @@ void writeFile()
     printf("Enter file name: ");
     scanf("%s", fileName);
 
+    /* Open file in append mode */
     file = fopen(fileName, "a");
 
     if(file == NULL)
@@ -47,6 +100,7 @@ void writeFile()
     printf("Enter student information: ");
     fgets(text, sizeof(text), stdin);
 
+    /* Write text into file */
     fprintf(file, "%s", text);
 
     fclose(file);
@@ -54,6 +108,7 @@ void writeFile()
     printf("Data written successfully.\n");
 }
 
+/* Function to display file contents */
 void readFile()
 {
     char fileName[50];
@@ -64,6 +119,7 @@ void readFile()
     printf("Enter file name: ");
     scanf("%s", fileName);
 
+    /* Open file in read mode */
     file = fopen(fileName, "r");
 
     if(file == NULL)
@@ -74,6 +130,7 @@ void readFile()
 
     printf("\nFile Content:\n");
 
+    /* Read file character by character */
     while((ch = fgetc(file)) != EOF)
     {
         printf("%c", ch);
@@ -84,6 +141,7 @@ void readFile()
     fclose(file);
 }
 
+/* Function to delete a file */
 void deleteFile()
 {
     char fileName[50];
@@ -91,6 +149,7 @@ void deleteFile()
     printf("Enter file name: ");
     scanf("%s", fileName);
 
+    /* Remove file from system */
     if(remove(fileName) == 0)
     {
         printf("File deleted successfully.\n");
@@ -101,13 +160,34 @@ void deleteFile()
     }
 }
 
+/* Main Function */
 int main()
 {
+    /* Predefined users for authentication */
+    struct User users[MAX_USERS] =
+    {
+        {"admin", "admin123", "Administrator"},
+        {"teacher", "teacher123", "Teacher"},
+        {"student", "student123", "Student"}
+    };
+
+    struct User currentUser;
+
+    /* Stop program if login fails */
+    if(login(users, &currentUser) == 0)
+    {
+        return 0;
+    }
+
     int choice;
 
     do
     {
         printf("\nSecure Student Records Management System\n");
+
+        /* Display current user role */
+        printf("Logged in as: %s\n", currentUser.role);
+
         printf("1. Create File\n");
         printf("2. Write File\n");
         printf("3. Read File\n");
