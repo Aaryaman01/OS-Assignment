@@ -23,6 +23,9 @@ int main()
 
     struct sockaddr_in serverAddress;
 
+    char message[1024];
+    char response[1024];
+
     /* Create socket */
     clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -53,6 +56,21 @@ int main()
 
     printf("Connected to server successfully.\n");
 
+    /* Create login message */
+    strcpy(message, "LOGIN admin admin123");
+
+    /* Send message */
+    send(clientSocket, message, strlen(message), 0);
+
+    printf("Message sent: %s\n", message);
+
+    /* Receive response */
+    memset(response, 0, sizeof(response));
+
+    recv(clientSocket, response, sizeof(response), 0);
+
+    printf("Server Response: %s\n", response)
+;
     close(clientSocket);
 
     return 0;

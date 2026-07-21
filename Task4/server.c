@@ -29,6 +29,8 @@ int main()
 
     socklen_t clientLength;
 
+    char buffer[1024];
+
     /* Create socket */
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -82,6 +84,19 @@ int main()
     }
 
     printf("Client connected successfully.\n");
+
+    /* Clear buffer */
+    memset(buffer, 0, sizeof(buffer));
+
+    /* Receive message from client */
+    recv(clientSocket, buffer, sizeof(buffer), 0);
+
+    printf("Received: %s\n", buffer);
+
+    /* Send response */
+    send(clientSocket, "AUTH_SUCCESS", 12, 0);
+
+    printf("Response sent to client.\n");
 
     /* Close sockets */
     close(clientSocket);
