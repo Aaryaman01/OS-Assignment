@@ -41,12 +41,15 @@ void writeLog(char username[], char action[], char fileName[])
     time(&currentTime);
 
     /* Store log information */
+    char *timeString = ctime(&currentTime);
+    timeString[strlen(timeString) - 1] = '\0';
+
     fprintf(logFile,
-            "User: %s | Action: %s | File: %s | Time: %s",
+       	    "%s | User: %s | Action: %s | File: %s\n",
+            timeString,
             username,
             action,
-            fileName,
-            ctime(&currentTime));
+            fileName);
 
     fclose(logFile);
 }
