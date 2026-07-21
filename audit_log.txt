@@ -1,0 +1,4 @@
+User:  | Action: Login Successful | File: System | Time: Tue Jul 21 09:53:00 2026
+User:  | Action: Delete Permission Denied | File: N/A | Time: Tue Jul 21 09:53:05 2026
+User: admin | Action: Login Successful | File: System | Time: Tue Jul 21 09:55:43 2026
+User: admin | Action: Deleted File | File: Results.txt | Time: Tue Jul 21 09:56:52 2026

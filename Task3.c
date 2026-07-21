@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /* Maximum number of users in the system */
 #define MAX_USERS 3
@@ -20,6 +21,35 @@ struct User
     int canDelete;
     int canEncrypt;
 };
+
+/* Function to record user activities */
+void writeLog(char username[], char action[], char fileName[])
+{
+    FILE *logFile;
+    time_t currentTime;
+
+    /* Open audit log file */
+    logFile = fopen("audit_log.txt", "a");
+
+    if(logFile == NULL)
+    {
+        printf("Unable to open audit log.\n");
+        return;
+    }
+
+    /* Get current system time */
+    time(&currentTime);
+
+    /* Store log information */
+    fprintf(logFile,
+            "User: %s | Action: %s | File: %s | Time: %s",
+            username,
+            action,
+            fileName,
+            ctime(&currentTime));
+
+    fclose(logFile);
+}
 
 /* Function to verify username and password */
 int login(struct User users[], struct User *currentUser)
@@ -43,10 +73,14 @@ int login(struct User users[], struct User *currentUser)
            strcmp(password, users[i].password) == 0)
         {
             /* Store current logged in user */
-            *currentUser = users[i];
+	    *currentUser = users[i];
 
             printf("\nLogin Successful!\n");
             printf("Role: %s\n", currentUser->role);
+
+	    writeLog(currentUser->username,
+                     "Login Successful",
+                     "System");
 
             return 1;
         }
@@ -54,6 +88,10 @@ int login(struct User users[], struct User *currentUser)
 
     /* Login failed */
     printf("\nInvalid Username or Password.\n");
+
+    writeLog("Unknown",
+             "Login Failed",
+             "System");
 
     return 0;
 }
@@ -68,6 +106,11 @@ void createFile(struct User currentUser)
     if(currentUser.canCreate == 0)
     {
         printf("Permission Denied.\n");
+
+	writeLog(currentUser.username,
+                 "Create Permission Denied",
+                 "N/A");
+
         return;
     }
 
@@ -84,6 +127,9 @@ void createFile(struct User currentUser)
     }
 
     printf("File created successfully.\n");
+    writeLog(currentUser.username,
+         "Created File",
+         fileName);
 
     fclose(file);
 }
@@ -100,6 +146,10 @@ void writeFile(struct User currentUser)
     if(currentUser.canWrite == 0)
     {
         printf("Permission Denied.\n");
+	writeLog(currentUser.username,
+             "Write Permission Denied",
+             "N/A");
+
         return;
     }
 
@@ -126,6 +176,9 @@ void writeFile(struct User currentUser)
     fclose(file);
 
     printf("Data written successfully.\n");
+    writeLog(currentUser.username,
+         "Wrote To File",
+         fileName);
 }
 
 /* Function to display file contents */
@@ -140,7 +193,11 @@ void readFile(struct User currentUser)
     if(currentUser.canRead == 0)
     {
         printf("Permission Denied.\n");
-        return;
+        writeLog(currentUser.username,
+             "Read Permission Denied",
+             "N/A");
+
+	return;
     }
 
     printf("Enter file name: ");
@@ -166,6 +223,11 @@ void readFile(struct User currentUser)
     printf("\n");
 
     fclose(file);
+
+    writeLog(currentUser.username,
+         "Read File",
+         fileName);
+
 }
 
 /* Function to delete a file */
@@ -177,7 +239,11 @@ void deleteFile(struct User currentUser)
     if(currentUser.canDelete == 0)
     {
         printf("Permission Denied.\n");
-        return;
+        writeLog(currentUser.username,
+             "Delete Permission Denied",
+             "N/A");
+
+	return;
     }
 
     printf("Enter file name: ");
@@ -187,6 +253,9 @@ void deleteFile(struct User currentUser)
     if(remove(fileName) == 0)
     {
         printf("File deleted successfully.\n");
+        writeLog(currentUser.username,
+         "Deleted File",
+         fileName);
     }
     else
     {
@@ -212,6 +281,10 @@ void encryptDecryptFile(struct User currentUser)
     if(currentUser.canEncrypt == 0)
     {
         printf("Permission Denied.\n");
+	writeLog(currentUser.username,
+             "Encrypt Permission Denied",
+             "N/A");
+
         return;
     }
 
@@ -254,6 +327,10 @@ void encryptDecryptFile(struct User currentUser)
     fclose(file);
 
     printf("Encryption/Decryption Completed.\n");
+
+    writeLog(currentUser.username,
+         "Encrypted/Decrypted File",
+         fileName);
 }
 
 /* Main Function */
