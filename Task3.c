@@ -194,6 +194,68 @@ void deleteFile(struct User currentUser)
     }
 }
 
+/* Function to encrypt or decrypt a file */
+void encryptDecryptFile(struct User currentUser)
+{
+    FILE *file;
+
+    char fileName[50];
+    char data[1000];
+
+    /* XOR key used for encryption and decryption */
+    int key = 7;
+
+    int i = 0;
+    int ch;
+
+    /* Check encryption permission */
+    if(currentUser.canEncrypt == 0)
+    {
+        printf("Permission Denied.\n");
+        return;
+    }
+
+    /* Get file name */
+    printf("Enter file name: ");
+    scanf("%s", fileName);
+
+    /* Open file in read mode */
+    file = fopen(fileName, "r");
+
+    if(file == NULL)
+    {
+        printf("File not found.\n");
+        return;
+    }
+
+    /* Read file and apply XOR operation */
+    while((ch = fgetc(file)) != EOF && i < 999)
+    {
+        data[i] = ch ^ key;
+        i++;
+    }
+
+    data[i] = '\0';
+
+    fclose(file);
+
+    /* Open file again in write mode */
+    file = fopen(fileName, "w");
+
+    if(file == NULL)
+    {
+        printf("Unable to save file.\n");
+        return;
+    }
+
+    /* Save encrypted or decrypted data */
+    fprintf(file, "%s", data);
+
+    fclose(file);
+
+    printf("Encryption/Decryption Completed.\n");
+}
+
 /* Main Function */
 int main()
 {
@@ -233,7 +295,8 @@ int main()
         printf("2. Write File\n");
         printf("3. Read File\n");
         printf("4. Delete File\n");
-        printf("5. Exit\n");
+        printf("5. Encrypt/Decrypt File\n");
+        printf("6. Exit\n");
 
         printf("Enter choice: ");
         scanf("%d", &choice);
@@ -256,7 +319,11 @@ int main()
                 deleteFile(currentUser);
                 break;
 
-            case 5:
+    	    case 5:
+    		encryptDecryptFile(currentUser);
+    		break;
+
+            case 6:
                 printf("Exiting System...\n");
                 break;
 
@@ -264,7 +331,7 @@ int main()
                 printf("Invalid Choice.\n");
         }
 
-    } while(choice != 5);
+    } while(choice != 6);
 
     return 0;
 }
