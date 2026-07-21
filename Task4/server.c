@@ -19,6 +19,13 @@
 
 #define PORT 8080
 
+/* User structure */
+struct User
+{
+    char username[30];
+    char password[30];
+};
+
 int main()
 {
     int serverSocket;
@@ -30,6 +37,14 @@ int main()
     socklen_t clientLength;
 
     char buffer[1024];
+
+    /* Valid users */
+    struct User users[3] =
+    {
+        {"admin", "admin123"},
+        {"teacher", "teacher123"},
+        {"student", "student123"}
+    };
 
     /* Create socket */
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -93,10 +108,39 @@ int main()
 
     printf("Received: %s\n", buffer);
 
-    /* Send response */
-    send(clientSocket, "AUTH_SUCCESS", 12, 0);
+    /* Parse login command */
+    char command[20];
+    char username[30];
+    char password[30];
 
-    printf("Response sent to client.\n");
+    sscanf(buffer,
+           "%s %s %s",
+           command,
+           username,
+           password);
+
+    int authenticated = 0;
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (strcmp(username, users[i].username) == 0 &&
+            strcmp(password, users[i].password) == 0)
+        {
+            authenticated = 1;
+            break;
+        }
+    }
+
+    if (authenticated)
+    {
+        send(clientSocket, "AUTH_SUCCESS", 12, 0);
+        printf("Authentication successful.\n");
+    }
+    else
+    {
+        send(clientSocket, "AUTH_FAILED", 11, 0);
+        printf("Authentication failed.\n");
+    }
 
     /* Close sockets */
     close(clientSocket);
