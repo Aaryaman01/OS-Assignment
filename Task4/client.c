@@ -57,7 +57,12 @@ int main()
     printf("Connected to server successfully.\n");
 
     /* Create login message */
-    strcpy(message, "LOGIN admin admin123");
+    printf("Enter login command:\n");
+
+    fgets(message, sizeof(message), stdin);
+
+    /* Remove newline */
+    message[strcspn(message, "\n")] = '\0';
 
     /* Send message */
     send(clientSocket, message, strlen(message), 0);

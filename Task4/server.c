@@ -44,7 +44,35 @@ void *handleClient(void *arg)
 
     memset(buffer, 0, sizeof(buffer));
 
-    recv(clientSocket, buffer, sizeof(buffer), 0);
+    int bytesReceived;
+
+    bytesReceived = recv(clientSocket,
+                     buffer,
+                     sizeof(buffer),
+                     0);
+
+    /* Client disconnected */
+    if (bytesReceived <= 0)
+    {
+    	printf("Client disconnected.\n");
+
+    	close(clientSocket);
+
+    	pthread_exit(NULL);
+    }
+
+    /* Empty message */
+    if (strlen(buffer) == 0)
+    {
+    	send(clientSocket,
+             "EMPTY_MESSAGE",
+             13,
+             0);
+
+    	close(clientSocket);
+
+    	pthread_exit(NULL);
+    }
 
     printf("\nReceived: %s\n", buffer);
 
@@ -52,11 +80,41 @@ void *handleClient(void *arg)
     char username[30];
     char password[30];
 
-    sscanf(buffer,
-           "%s %s %s",
-           command,
-           username,
-           password);
+    int fields;
+
+    fields = sscanf(buffer,
+                "%s %s %s",
+                command,
+                username,
+                password);
+
+    if (fields != 3)
+    {
+        send(clientSocket,
+       	    "INVALID_FORMAT",
+            14,
+            0);
+
+    	printf("Invalid login format.\n");
+
+    	close(clientSocket);
+
+    	pthread_exit(NULL);
+    }
+
+    if (strcmp(command, "LOGIN") != 0)
+    {
+    	send(clientSocket,
+             "INVALID_COMMAND",
+             15,
+             0);
+
+    	printf("Invalid command.\n");
+
+    	close(clientSocket);
+
+    	pthread_exit(NULL);
+    }
 
     int authenticated = 0;
 
@@ -101,6 +159,15 @@ int main()
     /* Create socket */
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 
+    /* Allow port reuse */
+    int opt = 1;
+
+    setsockopt(serverSocket,
+               SOL_SOCKET,
+               SO_REUSEADDR,
+               &opt,
+               sizeof(opt));
+
     if (serverSocket < 0)
     {
         printf("Socket creation failed.\n");
@@ -129,7 +196,7 @@ int main()
     /* Listen for clients */
     if(listen(serverSocket, 5)< 0)
     {
-	printf("Server listening...\n");
+	printf("Listen failed.\n");
 	close(serverSocket);
 	return 1;
     }
